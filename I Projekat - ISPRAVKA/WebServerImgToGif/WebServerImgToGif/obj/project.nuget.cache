@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "3X9pI7DbputdkkmaEJ3XTMWh0DltC9oJUwN0Doqa5H1Qp8iv9kRHPyYR9Ug6Ayb+38w910A43D4odsUu7oOsjg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Korisnik\\Desktop\\I projekat - 18077\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Korisnik\\.nuget\\packages\\sixlabors.imagesharp\\3.0.1\\sixlabors.imagesharp.3.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
