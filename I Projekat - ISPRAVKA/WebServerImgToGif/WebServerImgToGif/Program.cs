@@ -7,6 +7,8 @@ using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.ColorSpaces.Conversion;
 using Image = SixLabors.ImageSharp.Image;
 using System.Security.Cryptography;
+using System.ComponentModel;
+using System.IO.Enumeration;
 
 namespace WebServerImgToGif;
 
@@ -16,8 +18,11 @@ public struct HttpContextTimer
     public Stopwatch timer;
 }
 
+
 class Program
 {
+    static int totalRequestCounter = 0;
+
     private static object locker = new object();
      
     private static ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
@@ -29,8 +34,13 @@ class Program
     private static string gifCachePath = Path.Combine("../../../", "gifCache");
     
     private static string imagesPath = "../../../images";
-    private static void LoadCacheFolder()
+    private static void LoadCache()
     {
+        foreach (string imgPath in Directory.GetFiles(imagesPath))
+        {
+            string imgname = Path.GetFileName(imgPath);
+            imageCache.Add(imgname);
+        }
         if (!Directory.Exists(gifCachePath))
         {
             Directory.CreateDirectory(gifCachePath);
@@ -42,10 +52,9 @@ class Program
             {
                 string filename = Path.GetFileName(gifPath);
                 byte[] image_data = File.ReadAllBytes(gifPath);
-                string pngFilename = filename.Replace(".gif", ".png");
-                WriteCache(pngFilename, filename, image_data);
+                WriteCache(filename, image_data);
             }
-            Console.WriteLine("Cache loaded successfully");
+            Console.WriteLine("Cache loaded successfully.");
         }
     }
     private static byte[] ReadCache(string filename)
@@ -62,30 +71,37 @@ class Program
             cacheLock.ExitReadLock();
         }
     }
-    private static void WriteCache(string original, string filename, byte[] image_data)
+    private static void WriteCache(string filename, byte[] image_data)
     {
         Console.WriteLine("Nit upisuje sliku u kesu...");
         cacheLock.EnterWriteLock();
         try
         {
-            imageCache.Add(original);
-            gifCache.Add(filename, image_data);
+            if (!gifCache.ContainsKey(filename))
+            {
+                gifCache.Add(filename, image_data);
+                Console.WriteLine("Upisana slika u kesu.");
+            }
+            else
+            {
+                Console.WriteLine("Slika vec postoji, kes je nepromenjen...");
+            }
         }
         finally
         {
-            Console.WriteLine($"Nit uspesno upisala {original} i {filename} u kes!");
+            Console.WriteLine("Napusta se WriteLock...");
             cacheLock.ExitWriteLock();
         }
     }
 
     static void Main(string[] args)
-    {
+    { 
         HttpListener listener = new HttpListener();
         listener.Prefixes.Add("http://localhost:5050/");
         listener.Start();
-        
+
         //Cita postojece gif-ove iz kes foldera, i upisuje naziv originalnih slika u listu
-        LoadCacheFolder();
+        LoadCache();
 
         Console.WriteLine("Web server started at port 5050");
         while (listener.IsListening)
@@ -103,6 +119,7 @@ class Program
 
     private static void ProcessRequest(HttpContextTimer httpContextTime)
     {
+        Console.WriteLine($"Total number of processed requests : {totalRequestCounter}");
         if (!ThreadPool.QueueUserWorkItem(ProcessRequestExecute, httpContextTime))
         {
             httpContextTime.context.Response.StatusCode = 500;
@@ -119,7 +136,8 @@ class Program
         HttpListenerRequest request = context.Request;
 
         HttpListenerResponse response = context.Response;
-
+        
+        Console.WriteLine();
         Console.WriteLine
             (
                 $"Request received :\n" +
@@ -130,40 +148,47 @@ class Program
                 $"Content length: {request.ContentLength64}\n" +
                 $"Cookies: {request.Cookies}\n"
             );
+        Console.WriteLine();
+        
+        Interlocked.Increment(ref totalRequestCounter);
 
-        byte[] res_data;
+        response.ContentType = "image/gif";
+        response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+        byte[] res_data = null;
         response.StatusCode = 200;
         string query = request.Url.AbsolutePath;
         string path = imagesPath + query;
         string filename = query.Substring(1);
-
+        Console.WriteLine($"Request with query : {query}");
+        
         if (query == "/gifCache")
         {
             response.StatusCode = 403;
-            HttpResponse("403 - Access Denied", null, httpContextTime);
+            HttpResponse("403 - Access Denied", res_data, httpContextTime);
             return;
         }
-
-        if (query == "/" || query == "/favicon.ico")
+        if (gifCache.ContainsKey(filename.Replace(".png", ".gif")))
         {
-            response.StatusCode = 404;
-            HttpResponse("404 - Not Found", null, httpContextTime);;
-            return;
-        }
-
-        if (imageCache.Contains(filename))
-        {
+            response.StatusCode = 202;
             Console.WriteLine("Slika postoji u cache-u...");
-            res_data = ReadCache(filename.Replace(".png", ".gif"));
-            HttpResponse(filename, res_data, httpContextTime);
+            HttpResponse(filename, ReadCache(filename.Replace(".png", ".gif")), httpContextTime);
             return;
         }
-
         if (File.Exists(path))
         {
-            HttpResponse($"{filename} image converted", ImageToGif(path, filename), httpContextTime);
+            Console.WriteLine($"Krece konverzija slike {query}...");
+            res_data = ImageToGif(path, filename);
+            HttpResponse($"{filename} image converted", res_data, httpContextTime);
+            WriteCache(filename.Replace(".png", ".gif"), res_data);
+            return;
         }
-
+        else
+        {
+            response.StatusCode = 404;
+            HttpResponse("404 - Not Found", res_data, httpContextTime); ;
+            return;
+        }
     }
 
     private static void HttpResponse(string responseString, byte[]? res_data, HttpContextTimer httpContextTime)
@@ -180,23 +205,23 @@ class Program
             buffer = Encoding.UTF8.GetBytes(responseString);
             res.ContentLength64 = 64;
         }
-        res.ContentType = "image/gif";
         res.OutputStream.Write(buffer, 0, buffer.Length);
         httpContextTime.timer.Stop();
+
+        Console.WriteLine();
         Console.WriteLine
             (
-                $"Response : \n" +
+                $"====== Response ====== \n" +
                 $"Status code: {res.StatusCode}\n" +
                 $"Content type: {res.ContentType}\n" +
                 $"Content length: {res.ContentLength64}\n" +
                 $"Time taken for response: {httpContextTime.timer.Elapsed.TotalSeconds} s\n"+
                 $"Body: {responseString}\n"
             );
+        Console.WriteLine();
     }
     private static byte[] ImageToGif(string path, string filename)
     {
-        string gifFilename = filename.Replace(".png", ".gif");
-
         try
         {
             //ucitavanje slike i inicijalizovanje gif-a
@@ -223,22 +248,29 @@ class Program
                 gifImage.Frames[gifImage.Frames.Count - 1].Metadata.GetGifMetadata().FrameDelay = 100;
             }
 
-            string gifPath = gifCachePath + "/" + gifFilename;
 
+            string gifFilename = filename.Replace(".png", ".gif");
+
+            string gifPath = gifCachePath + "/" + gifFilename;
+            
             //upisivanje u cache folder
 
-            Console.WriteLine("Ceka se upis u cache folderu...");
             lock (locker)
             {
-                using FileStream stream = new FileStream(gifPath, FileMode.Create);
-                gifImage.SaveAsGif(stream, new GifEncoder { ColorTableMode = GifColorTableMode.Local });
-                Console.WriteLine("Nit uspesno upisala gif u cache folder!");
+                if (!gifCache.ContainsKey(gifFilename))
+                {
+                    Console.WriteLine("Upisuje se u kes folder... ");
+                    using (FileStream stream = new FileStream(gifPath, FileMode.Create))
+                    {
+                        gifImage.SaveAsGif(stream, new GifEncoder { ColorTableMode = GifColorTableMode.Local });
+                        Console.WriteLine("Nit uspesno upisala gif u cache folder!");
+                    }
+                    gifCache.Add(gifFilename, File.ReadAllBytes(gifPath));
+                    Console.WriteLine("Upisana slika u kesu.");
+                }
             }
-
             byte[] gif_data = File.ReadAllBytes(gifPath);
-            WriteCache(filename, gifFilename, gif_data);
             return gif_data;
-
         }
         catch (Exception e)
         {

@@ -49,11 +49,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Korisnik\\Desktop\\I projekat - 18077\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
+      "projectUniqueName": "C:\\Users\\Korisnik\\Desktop\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
       "projectName": "WebServerImgToGif",
-      "projectPath": "C:\\Users\\Korisnik\\Desktop\\I projekat - 18077\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
+      "projectPath": "C:\\Users\\Korisnik\\Desktop\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
       "packagesPath": "C:\\Users\\Korisnik\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Korisnik\\Desktop\\I projekat - 18077\\WebServerImgToGif\\WebServerImgToGif\\obj\\",
+      "outputPath": "C:\\Users\\Korisnik\\Desktop\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Korisnik\\AppData\\Roaming\\NuGet\\NuGet.Config",
