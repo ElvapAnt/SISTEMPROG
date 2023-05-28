@@ -44,19 +44,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Korisnik\\.nuget\\packages\\": {}
+    "C:\\Users\\Zoki\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Korisnik\\Desktop\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
+      "projectUniqueName": "C:\\Users\\Zoki\\Desktop\\SysProg\\SISTEMPROG\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
       "projectName": "WebServerImgToGif",
-      "projectPath": "C:\\Users\\Korisnik\\Desktop\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
-      "packagesPath": "C:\\Users\\Korisnik\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Korisnik\\Desktop\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\obj\\",
+      "projectPath": "C:\\Users\\Zoki\\Desktop\\SysProg\\SISTEMPROG\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\WebServerImgToGif.csproj",
+      "packagesPath": "C:\\Users\\Zoki\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Zoki\\Desktop\\SysProg\\SISTEMPROG\\I Projekat - ISPRAVKA\\WebServerImgToGif\\WebServerImgToGif\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Korisnik\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Zoki\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -103,7 +103,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
       }
     }
   }
